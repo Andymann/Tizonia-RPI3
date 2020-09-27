@@ -1,0 +1,44 @@
+
+sudo alsactl restore
+
+tizonia --spotify-user AAAAAAAA --spotify-password BBBBBB# --spotify-playlist-id 0oUXKipJxVQQGPnf67l1V7 -s
+tizonia --spotify-user AAAAAAAA --spotify-playlist-id 0oUXKipJxVQQGPnf67l1V7 -s
+
+
+### List Bus ###
+dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames|grep "org.mpris.MediaPlayer2.tizonia"| cut -d '"' -f 2
+
+
+
+### NEXT ###
+dbus-send --print-reply --dest=$(dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames|grep "org.mpris.MediaPlayer2.tizonia"| cut -d '"' -f 2) /com/aratelia/tiz/tizonia org.mpris.MediaPlayer2.Player.Next
+
+
+### PLAYBACKSTATUS ###
+dbus-send --print-reply --dest=$(dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames|grep "org.mpris.MediaPlayer2.tizonia"| cut -d '"' -f 2) /com/aratelia/tiz/tizonia org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:"PlaybackStatus"|awk -F'"' '{ print $2 }' NF=NF RS= OFS=
+
+
+### DBUS QUERY ALLGEMEIN ###
+dbus-send --print-reply --dest=$(dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames|grep "org.mpris.MediaPlayer2.tizonia"| cut -d '"' -f 2) /com/aratelia/tiz/tizonia org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:"PlaybackStatus"|awk -F'"' '{ print $2 }' NF=NF RS= OFS= | grep -i -E 'PLAYING|PAUSED|STOPPED'
+
+
+### QUERY VOLUME ###
+dbus-send --print-reply --dest=$(dbus-send --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames|grep "org.mpris.MediaPlayer2.tizonia"| cut -d '"' -f 2) /com/aratelia/tiz/tizonia org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:"Volume"
+
+
+Rock Party Playlist: 37i9dQZF1DX8FwnYE6PRvL
+Shy FX Playlist: 0oUXKipJxVQQGPnf67l1V7
+Rock your summer: 37i9dQZF1DWYQE7bByhrad
+Biggest Kicks Metal Tracks of the Moment: 37i9dQZF1DWTcqUzwhNmKv
+Best of Indie, Rock: 3rCbh3pcaB6yQGmcB4I0yf
+Nähmaschine Einhorn:2JOsWhMtXZIb6E1qWAa3ry
+
+
+### Query Volume Bash ###
+awk -F"[][]" '/dB/ { print $2 }' <(amixer sget Master)
+awk -F"[][]" '/dB/ { print $2 }' <(amixer sget Headphone)
+
+
+### Stille Tracks:
+Top Cat
+
