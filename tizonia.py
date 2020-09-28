@@ -65,7 +65,7 @@ def killTizonia():
 
 def startTizonia(playlistID):
     # Reset Timer
-    t = time.time()
+    t = time.time()+23
 
     mixer.music.play(-1)
     print('Starting with Playlist ' + lst_playlist[playlistID])
@@ -154,7 +154,7 @@ while True:
                 stat = getPlayer().Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus',
                                        dbus_interface='org.freedesktop.DBus.Properties')
                 print(stat)
-                if stat in ['Playing']:
+                if 'Playing' in stat:
                     # mixer.music.fadeout()
                     # mixer.music.rewind()
                     mixer.music.stop()
@@ -224,28 +224,34 @@ while True:
         # global idActive
         idActive = 0
         killTizonia()
+        time.sleep(2.3)
         startTizonia(0)
     if sCmd in ['p1', 'P1']:
         sCmd = 'NONO'
         # global idActive
         idActive = 1
         killTizonia()
+        time.sleep(2.3)
         startTizonia(1)
     if sCmd in ['p2', 'P2']:
         sCmd = 'NONO'
         # global idActive
         idActive = 2
         killTizonia()
+        time.sleep(2.3)
         startTizonia(2)
     if sCmd in ['p3', 'P3']:
         sCmd = 'NONO'
         # global idActive
         idActive = 3
         killTizonia()
+        time.sleep(2.3)
         startTizonia(3)
     if sCmd in ['p4', 'P4']:
         sCmd = 'NONO'
         # global idActive
         idActive = 4
         killTizonia()
+        time.sleep(2.3)
         startTizonia(4)
+    time.sleep(.1)
