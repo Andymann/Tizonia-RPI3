@@ -15,36 +15,6 @@ from pygame import mixer
 lst_playlist = []
 
 
-class RepeatedTimer(object):
-    def __init__(self, interval, function, *args, **kwargs):
-        self._timer = None
-        self.interval = interval
-        self.function = function
-        self.args = args
-        self.kwargs = kwargs
-        self.is_running = False
-        self.start()
-
-    def _run(self):
-        self.is_running = False
-        self.start()
-        self.function(*self.args, **self.kwargs)
-
-    def start(self):
-        if not self.is_running:
-            self._timer = Timer(self.interval, self._run)
-            self._timer.start()
-            self.is_running = True
-
-    def stop(self):
-        self._timer.cancel()
-        self.is_running = False
-
-
-def hello(name):
-    print("Hello %s!" % name)
-
-
 def getPlayer():
     player = None
     try:
@@ -57,21 +27,37 @@ def getPlayer():
 
 
 def killTizonia():
+    print('Teminating Tizonia ...')
+    GPIO.output(13, 1)  # OFF
     PROCNAME = "tizonia"
     for proc in psutil.process_iter():
         if proc.name() == PROCNAME:
             proc.kill()
+            print('Tizonia process killed')
+
+
+def isRunning():
+    PROCNAME = "tizonia"
+    for proc in psutil.process_iter():
+        if proc.name() == PROCNAME:
+            print("isRunning: True")
+            # GPIO.output(13, 0)  # ON
+            return True
+    print("isRunning: False")
+    return False
 
 
 def startTizonia(playlistID):
     # Reset Timer
-    t = time.time()+23
-
+    global t
+    t = time.time()+4
+    print('starting Fahrstuhlmusik')
     mixer.music.play(-1)
     print('Starting with Playlist ' + lst_playlist[playlistID])
     output = subprocess.call(
         'lxterminal -e tizonia --spotify-playlist-id ' + lst_playlist[playlistID] + ' -s &', cwd='/home/pi/', shell=True)
     print(output)
+    print('Tizonia started...')
 
 
 def doIfHigh(channel):
@@ -118,6 +104,7 @@ try:
 except:
     print('Error while parsing xml from web')
 
+global t
 t = time.time()
 GPIO.setmode(GPIO.BOARD)
 
@@ -128,12 +115,16 @@ GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-GPIO.add_event_detect(11, GPIO.RISING, callback=doIfHigh, bouncetime=1000)
-GPIO.add_event_detect(8, GPIO.RISING, callback=doIfHigh, bouncetime=1000)
-GPIO.add_event_detect(10, GPIO.RISING, callback=doIfHigh, bouncetime=1000)
-GPIO.add_event_detect(12, GPIO.RISING, callback=doIfHigh, bouncetime=1000)
-GPIO.add_event_detect(16, GPIO.RISING, callback=doIfHigh, bouncetime=1000)
-GPIO.add_event_detect(18, GPIO.RISING, callback=doIfHigh, bouncetime=1000)
+# ----GREEN Led
+GPIO.setup(13, GPIO.OUT)
+GPIO.output(13, 1)  # OFF
+
+GPIO.add_event_detect(11, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
+GPIO.add_event_detect(8, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
+GPIO.add_event_detect(10, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
+GPIO.add_event_detect(12, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
+GPIO.add_event_detect(16, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
+GPIO.add_event_detect(18, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
 
 
 idActive = -1
@@ -141,7 +132,11 @@ idActive = -1
 
 mixer.init()
 mixer.music.load('/home/pi/Music/jeopardy.mp3')
-# mixer.music.play(-1)
+
+
+ir = randrange(5)
+print('Autostart. picking random playlist:' + str(ir))
+startTizonia(ir)
 
 sCmd = 'NONO'
 while True:
@@ -149,18 +144,27 @@ while True:
     if time.time()-t > 4:
         # run your task here every n seconds
         t = time.time()
-        if not getPlayer() is None:
+        # if not getPlayer() is None:
+        #    try:
+        #        stat = getPlayer().Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus',
+        #                               dbus_interface='org.freedesktop.DBus.Properties')
+        #        print(stat)
+        #        if 'Playing' in stat:
+        #            mixer.music.stop()
+        #
+        #    except Exception as err:
+        #        print('Exception:')
+        if isRunning():
             try:
                 stat = getPlayer().Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus',
                                        dbus_interface='org.freedesktop.DBus.Properties')
                 print(stat)
                 if 'Playing' in stat:
-                    # mixer.music.fadeout()
-                    # mixer.music.rewind()
+                    print('Stopping Fahrstuhlmusik...')
                     mixer.music.stop()
 
             except Exception as err:
-                print('Exception:')
+                print('Exception while querying Tizonia instance:')
         else:
             print('Interval query: Tizonia not running')
             if idActive is -1:
@@ -173,30 +177,11 @@ while True:
                 startTizonia(idActive)
 
     # sCmd = 'T'  # (input())
-    if sCmd in ['n1', 'N1']:
-        bus = dbus.SessionBus()
-        for service in bus.list_names():
-            if re.match('org.mpris.MediaPlayer2.tizonia.', service):
-                player = dbus.SessionBus().get_object(service, '/com/aratelia/tiz/tizonia')
-                player.Next(dbus_interface='org.mpris.MediaPlayer2.Player')
-    if sCmd in ['k1', 'K1']:
-        bus = dbus.SessionBus()
-        for service in bus.list_names():
-            if re.match('org.mpris.MediaPlayer2.tizonia.', service):
-                player = dbus.SessionBus().get_object(service, '/com/aratelia/tiz/tizonia')
-                player.Kill(dbus_interface='org.mpris.MediaPlayer2.Player')
-    if sCmd in ['v1', 'V1']:
-        bus = dbus.SessionBus()
-        for service in bus.list_names():
-            if re.match('org.mpris.MediaPlayer2.tizonia.', service):
-                player = dbus.SessionBus().get_object(service, '/com/aratelia/tiz/tizonia')
-                volume = player.Get('org.mpris.MediaPlayer2.Player', 'Volume',
-                                    dbus_interface='org.freedesktop.DBus.Properties')
-                print(volume)
     if sCmd in ['n', 'N']:
         print('Command: NEXT')
         if not getPlayer() is None:
             getPlayer().Next(dbus_interface='org.mpris.MediaPlayer2.Player')
+        # global sCmd
         sCmd = 'NONO'
     if sCmd in ['v', 'V']:
         if not getPlayer is None:
@@ -217,41 +202,43 @@ while True:
             sCmd = 'NONO'
     if sCmd in ['x', 'X']:
         killTizonia()
+        global sCMD
         sCmd = 'NONO'
 
     if sCmd in ['p0', 'P0']:
+        # global sCMD
         sCmd = 'NONO'
-        # global idActive
         idActive = 0
         killTizonia()
         time.sleep(2.3)
         startTizonia(0)
     if sCmd in ['p1', 'P1']:
+        # global sCMD
         sCmd = 'NONO'
-        # global idActive
         idActive = 1
         killTizonia()
         time.sleep(2.3)
         startTizonia(1)
     if sCmd in ['p2', 'P2']:
+        # global sCMD
         sCmd = 'NONO'
-        # global idActive
         idActive = 2
         killTizonia()
         time.sleep(2.3)
         startTizonia(2)
     if sCmd in ['p3', 'P3']:
+        # global sCMD
         sCmd = 'NONO'
-        # global idActive
         idActive = 3
         killTizonia()
         time.sleep(2.3)
         startTizonia(3)
     if sCmd in ['p4', 'P4']:
+        # global sCMD
         sCmd = 'NONO'
-        # global idActive
         idActive = 4
         killTizonia()
         time.sleep(2.3)
         startTizonia(4)
+
     time.sleep(.1)
