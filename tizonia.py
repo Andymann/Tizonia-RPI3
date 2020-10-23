@@ -41,7 +41,7 @@ def isRunning():
     for proc in psutil.process_iter():
         if proc.name() == PROCNAME:
             print("isRunning: True")
-            # GPIO.output(13, 0)  # ON
+            GPIO.output(13, 0)  # ON
             return True
     print("isRunning: False")
     return False
