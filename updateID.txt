@@ -1,0 +1,15 @@
+#
+# This file acts as an update mechanism.
+# the first non-dashed line contains an ID
+# if this id differs from the local copy
+# a git clone is done on the machine in order
+# to retrieve a new copy 
+#
+# There are several other ways. Reading the commit-id, for example.
+# However this allows me to control the exact moment
+# when an upgrade should be pulled.
+#
+# ID can be basically anything but something like
+# a timestamp seems sensible.
+#
+23102020
