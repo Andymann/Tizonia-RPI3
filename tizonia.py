@@ -54,7 +54,8 @@ def startTizonia(playlistID):
     print('starting Fahrstuhlmusik')
     # mixer.sound.play(-1)
     # mixer.Channel(0).play(-1)
-    mixer.Channel(0).play('/home/pi/Music/jeopardy.mp3', -1)
+    sound1 = mixer.Sound('/home/pi/Music/jeopardy.wav')
+    mixer.Channel(0).play(sound1, -1)
     print('Starting with Playlist ' + lst_playlist[playlistID])
     output = subprocess.call(
         'lxterminal -e tizonia --spotify-playlist-id ' + lst_playlist[playlistID] + ' -s &', cwd='/home/pi/', shell=True)
