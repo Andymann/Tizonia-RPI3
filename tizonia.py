@@ -52,7 +52,8 @@ def startTizonia(playlistID):
     global t
     t = time.time()+4
     print('starting Fahrstuhlmusik')
-    mixer.music.play(-1)
+    # mixer.sound.play(-1)
+    mixer.Channel(0).play(-1)
     print('Starting with Playlist ' + lst_playlist[playlistID])
     output = subprocess.call(
         'lxterminal -e tizonia --spotify-playlist-id ' + lst_playlist[playlistID] + ' -s &', cwd='/home/pi/', shell=True)
@@ -131,6 +132,12 @@ idActive = -1
 
 
 mixer.init()
+# channel1 = pygame.mixer.Channel(0) # argument must be int
+# sound1 = pygame.mixer.Sound('/home/pi/Music/jeopardy.mp3')
+
+# channel1.play(sound1, loops = -1)
+# pygame.mixer.find_channel().play(sound1)
+
 mixer.music.load('/home/pi/Music/jeopardy.mp3')
 
 
@@ -161,7 +168,8 @@ while True:
                 print(stat)
                 if 'Playing' in stat:
                     print('Stopping Fahrstuhlmusik...')
-                    mixer.music.stop()
+                    # mixer.music.stop()
+                    mixer.Channel(0).stop()
 
             except Exception as err:
                 print('Exception while querying Tizonia instance:')
