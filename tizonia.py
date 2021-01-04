@@ -53,7 +53,8 @@ def startTizonia(playlistID):
     t = time.time()+4
     print('starting Fahrstuhlmusik')
     # mixer.sound.play(-1)
-    mixer.Channel(0).play(-1)
+    # mixer.Channel(0).play(-1)
+    mixer.Channel(0).play('/home/pi/Music/jeopardy.mp3', -1)
     print('Starting with Playlist ' + lst_playlist[playlistID])
     output = subprocess.call(
         'lxterminal -e tizonia --spotify-playlist-id ' + lst_playlist[playlistID] + ' -s &', cwd='/home/pi/', shell=True)
@@ -138,7 +139,7 @@ mixer.init()
 # channel1.play(sound1, loops = -1)
 # pygame.mixer.find_channel().play(sound1)
 
-mixer.music.load('/home/pi/Music/jeopardy.mp3')
+# mixer.music.load('/home/pi/Music/jeopardy.mp3')
 
 
 ir = randrange(5)
