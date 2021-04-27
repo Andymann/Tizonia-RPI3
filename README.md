@@ -1,6 +1,7 @@
 # Tizonia-on-Raspberry-Pi
 
 Function | Pin | Signal<br>
+LED | 33 | Gpio 13<br>
 Skip | 11 | Gpio 17<br>
 PL 0 | 08 | Gpio 14<br>
 PL 1 | 10 | Gpio 15<br>

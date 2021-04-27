@@ -1,16 +1,16 @@
-import dbus
-import re
-import psutil
-import threading
-import time
-import subprocess
-import RPi.GPIO as GPIO
-import xml.etree.ElementTree as ET
-
-from random import randrange
-from threading import Timer
-from urllib.request import urlopen
 from pygame import mixer
+from urllib.request import urlopen
+from threading import Timer
+from random import randrange
+import xml.etree.ElementTree as ET
+import RPi.GPIO as GPIO
+import subprocess
+import time
+import threading
+import psutil
+import re
+import dbus
+
 
 lst_playlist = []
 
@@ -27,7 +27,7 @@ def getPlayer():
 
 
 def killTizonia():
-    print('Teminating Tizonia ...')
+    print('Terminating Tizonia ...')
     GPIO.output(13, 1)  # OFF
     PROCNAME = "tizonia"
     for proc in psutil.process_iter():
@@ -40,7 +40,7 @@ def isRunning():
     PROCNAME = "tizonia"
     for proc in psutil.process_iter():
         if proc.name() == PROCNAME:
-            print("isRunning: True")
+            # print("isRunning: True")
             GPIO.output(13, 0)  # ON
             return True
     print("isRunning: False")
@@ -49,6 +49,7 @@ def isRunning():
 
 def startTizonia(playlistID):
     # Reset Timer
+    # print('startTizonia')
     global t
     t = time.time()+4
     print('starting Fahrstuhlmusik')
@@ -67,25 +68,37 @@ def doIfHigh(channel):
     # Zugriff auf Variable i ermöglichen
     # global i
     # Wenn Eingang HIGH ist, Ausgabe im Terminal erzeugen
-    print("Eingang " + str(channel) + " HIGH")
-    global sCmd
-    if channel == 11:
-        sCmd = 'n'
-    if channel is 8:
-        print('Playlist Index 0')
-        sCmd = 'p0'
-    if channel is 10:
-        print('Playlist Index 1')
-        sCmd = 'p1'
-    if channel is 12:
-        print('Playlist Index 2')
-        sCmd = 'p2'
-    if channel is 16:
-        print('Playlist Index 3')
-        sCmd = 'p3'
-    if channel is 18:
-        print('Playlist Index 4')
-        sCmd = 'p4'
+    time.sleep(.15)
+    # testval = GPIO.input(channel)
+    # print('testval:' + str(testval))
+    # start_time = time.time()
+
+    # while GPIO.input(channel) == 1:
+    #     pass
+
+    # buttonTime = time.time() - start_time
+    # if buttonTime >= .02:
+    if GPIO.input(channel) == 1:
+        print('Long button Press')
+        print("Eingang " + str(channel) + " HIGH")
+        global sCmd
+        if channel == 11:
+            sCmd = 'n'
+        if channel is 8:
+            print('Playlist Index 0')
+            sCmd = 'p0'
+        if channel is 10:
+            print('Playlist Index 1')
+            sCmd = 'p1'
+        if channel is 12:
+            print('Playlist Index 2')
+            sCmd = 'p2'
+        if channel is 16:
+            print('Playlist Index 3')
+            sCmd = 'p3'
+        if channel is 18:
+            print('Playlist Index 4')
+            sCmd = 'p4'
 
 
 try:
@@ -98,12 +111,13 @@ try:
 
     if len(root) >= 5:
         print('XML ist gross genug')
-
-    for playlist in root.findall('playlist'):
-        name = playlist.get('name')
-        plid = playlist.find('id').text
-        print(name + "  " + plid)
-        lst_playlist.append(plid)
+        for playlist in root.findall('playlist'):
+            name = playlist.get('name')
+            plid = playlist.find('id').text
+            print(name + "  " + plid)
+            lst_playlist.append(plid)
+        else:
+            print('XML zu klein')
 except:
     print('Error while parsing xml from web')
 
@@ -122,12 +136,12 @@ GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(13, GPIO.OUT)
 GPIO.output(13, 1)  # OFF
 
-GPIO.add_event_detect(11, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
-GPIO.add_event_detect(8, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
-GPIO.add_event_detect(10, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
-GPIO.add_event_detect(12, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
-GPIO.add_event_detect(16, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
-GPIO.add_event_detect(18, GPIO.RISING, callback=doIfHigh, bouncetime=5000)
+GPIO.add_event_detect(11, GPIO.RISING, callback=doIfHigh, bouncetime=500)
+GPIO.add_event_detect(8, GPIO.RISING, callback=doIfHigh, bouncetime=500)
+GPIO.add_event_detect(10, GPIO.RISING, callback=doIfHigh, bouncetime=500)
+GPIO.add_event_detect(12, GPIO.RISING, callback=doIfHigh, bouncetime=500)
+GPIO.add_event_detect(16, GPIO.RISING, callback=doIfHigh, bouncetime=500)
+GPIO.add_event_detect(18, GPIO.RISING, callback=doIfHigh, bouncetime=500)
 
 
 idActive = -1
@@ -167,10 +181,9 @@ while True:
             try:
                 stat = getPlayer().Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus',
                                        dbus_interface='org.freedesktop.DBus.Properties')
-                print(stat)
+                # print(stat) 'Playing'
                 if 'Playing' in stat:
-                    print('Stopping Fahrstuhlmusik...')
-                    # mixer.music.stop()
+                    # print('Stopping Fahrstuhlmusik...')
                     mixer.Channel(0).stop()
 
             except Exception as err:
@@ -204,7 +217,8 @@ while True:
         if not getPlayer() is None:
             stat = getPlayer().Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus',
                                    dbus_interface='org.freedesktop.DBus.Properties')
-            print(stat)
+            print(stat)  # z.B. 'Playing
+
             # if not stat.upper() in ['PLAYING', 'STOPPED', 'PAUSED']:
             #    print('Tizonia not running')
         else:
@@ -220,35 +234,35 @@ while True:
         sCmd = 'NONO'
         idActive = 0
         killTizonia()
-        time.sleep(2.3)
+        time.sleep(.3)
         startTizonia(0)
     if sCmd in ['p1', 'P1']:
         # global sCMD
         sCmd = 'NONO'
         idActive = 1
         killTizonia()
-        time.sleep(2.3)
+        time.sleep(.3)
         startTizonia(1)
     if sCmd in ['p2', 'P2']:
         # global sCMD
         sCmd = 'NONO'
         idActive = 2
         killTizonia()
-        time.sleep(2.3)
+        time.sleep(.3)
         startTizonia(2)
     if sCmd in ['p3', 'P3']:
         # global sCMD
         sCmd = 'NONO'
         idActive = 3
         killTizonia()
-        time.sleep(2.3)
+        time.sleep(.3)
         startTizonia(3)
     if sCmd in ['p4', 'P4']:
         # global sCMD
         sCmd = 'NONO'
         idActive = 4
         killTizonia()
-        time.sleep(2.3)
+        time.sleep(.3)
         startTizonia(4)
 
     time.sleep(.1)
