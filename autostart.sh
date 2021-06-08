@@ -1,5 +1,6 @@
 #!/bin/bash
 #echo running autostart > autostart.log
+rm -r "/var/tmp/tizonia-pi-spotify-"*
 pkill tizonia
 
 DIR="$( cd "$( dirname "$0" )" && pwd )"
