@@ -12,7 +12,7 @@ import re
 import dbus
 import sys
 
-TIMERVALUE = .01
+TIMERVALUE = 0.01
 STATE_NONE = -2
 STATE_UNDEFINED = -1
 STATE_PLAYING = 1
@@ -120,10 +120,10 @@ def processState():
         #
         # Bis dahin ergibt eine Query auf den Player das Ergebnis 'Stopped', danach 'Playing'
         global iTimerCounter
-        if iTimerCounter < 100:
+        if iTimerCounter < 1000:
             iTimerCounter = iTimerCounter + 1
         else:
-            # print('processState: starting. Zeit fuer Query')
+            print('processState: starting. Zeit fuer Query')
             bLed = not bLed
             GPIO.output(13, bLed)
             iTimerCounter = 0
@@ -262,6 +262,7 @@ if getXml() == True:
     while True:
         queryButtons()
         processState()
+        # print('sleeping...')
         time.sleep(TIMERVALUE)
         if iErrorCounter > 5:
             killTizonia()
